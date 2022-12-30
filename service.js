@@ -6,6 +6,7 @@ const axios = require('axios');
 
 var express = require('express');
 var router = express();
+router.use(express.json());
 
 router.get('/rotate/ec', async (req, res) => {
   const keyStore = jose.JWK.createKeyStore()
@@ -44,7 +45,7 @@ router.get('/jwks/rsa', async (req, res) => {
 })
 
 router.get('/token/ec', async (req, res) => {
-    const ks = fs.readFileSync('keys.json')
+    const ks = fs.readFileSync('keys_ec.json')
     const keyStore = await jose.JWK.asKeyStore(ks.toString())
     const [key] = keyStore.all({ use: 'sig' })
 
@@ -73,6 +74,32 @@ router.get('/token/rsa', async (req, res) => {
     .update(payload)
     .final()
   res.send({ token })
+})
+
+router.post('/verify/rsa', async (req, res) => {
+  const { token } = req.body
+  const { data } = await axios.get('http://localhost:3000/jwks/rsa')
+  const [ firstKey ] = data.keys
+  const publicKey = jwktopem(firstKey)
+  try {
+    const decoded = jwt.verify(token, publicKey)
+    res.send(decoded)
+  } catch (e) {
+    res.send({ error: e })
+  }
+})
+
+router.post('/verify/ec', async (req, res) => {
+  const { token } = req.body
+  const { data } = await axios.get('http://localhost:3000/jwks/ec')
+  const [ firstKey ] = data.keys
+  const publicKey = jwktopem(firstKey)
+  try {
+    const decoded = jwt.verify(token, publicKey)
+    res.send(decoded)
+  } catch (e) {
+    res.send({ error: e })
+  }
 })
 
 router.listen(3000);
