@@ -1,5 +1,5 @@
 # jwks-service-js
-This project aims to expose a simple jwks API service supporting both EC and RSA algorithm (256). 
+This project aims to expose a simple jwks API service (on the port 3000) supporting both EC and RSA algorithm (256). 
 
 ## Table of contents
 * [General info](#general-info)
